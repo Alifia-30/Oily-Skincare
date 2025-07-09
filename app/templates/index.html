@@ -1,0 +1,391 @@
+{% extends "base.html" %} {% block title %}Dashboard - Skincare Selector{%
+endblock %} {% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body p-4">
+        <h2 class="mb-4">
+          <i class="fas fa-chart-pie"></i> Sistem Pendukung Keputusan Skincare
+        </h2>
+        <div class="alert alert-info">
+          <h5><i class="fas fa-info-circle"></i> Cara Penggunaan</h5>
+          <ol class="mb-0">
+            <li>
+              Lihat daftar produk skincare dan informasinya di tabel di bawah
+            </li>
+            <li>
+              Pilih salah satu template bobot yang tersedia atau masukkan bobot
+              sendiri
+            </li>
+            <li>Pastikan total semua bobot = 1.0 (100%)</li>
+            <li>Klik "Hitung Peringkat" untuk melihat rekomendasi produk</li>
+          </ol>
+        </div>
+        <div class="mt-4">
+          <h5><i class="fas fa-list-check"></i> Kriteria Penilaian:</h5>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-tag"></i> C1 - Harga (Cost)
+                  </h6>
+                  <p class="card-text text-muted">Semakin murah semakin baik</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-flask"></i> C2 - Bahan Aktif (Benefit)
+                  </h6>
+                  <p class="card-text text-muted">
+                    Skor 1-5, semakin tinggi semakin baik
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-star"></i> C3 - Review Pengguna (Benefit)
+                  </h6>
+                  <p class="card-text text-muted">
+                    Skor 1-5, semakin tinggi semakin baik
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mt-3">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-box"></i> C4 - Stok (Benefit)
+                  </h6>
+                  <p class="card-text text-muted">
+                    Semakin banyak semakin baik
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mt-3">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-shield-alt"></i> C5 - Efek Samping
+                    (Benefit)
+                  </h6>
+                  <p class="card-text text-muted">
+                    Skor 1-5, semakin tinggi semakin aman
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Product Alternatives Column -->
+  <div class="col-lg-12 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="mb-0">
+          <i class="fas fa-list"></i> Alternatif Produk Skincare
+        </h3>
+      </div>
+      <div class="card-body">
+        {% if products %} {% include '_products.html' %} {% else %}
+        <p class="text-center">
+          Belum ada data produk. Silakan jalankan seeding awal.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Weighting Column -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="mb-0"><i class="fas fa-sliders"></i> Pembobotan Kriteria</h3>
+      </div>
+      <div class="card-body">
+        <div class="mb-4">
+          <h5><i class="fas fa-lightbulb"></i> Template Pembobotan:</h5>
+          <div class="d-flex gap-2 flex-wrap">
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm template-btn"
+              data-weights='{"w1":0.3,"w2":0.25,"w3":0.2,"w4":0.15,"w5":0.1}'
+            >
+              <i class="fas fa-tag"></i> Template 1: Fokus Harga
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm template-btn"
+              data-weights='{"w1":0.2,"w2":0.3,"w3":0.25,"w4":0.15,"w5":0.1}'
+            >
+              <i class="fas fa-flask"></i> Template 2: Fokus Bahan Aktif
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm template-btn"
+              data-weights='{"w1":0.2,"w2":0.2,"w3":0.3,"w4":0.15,"w5":0.15}'
+            >
+              <i class="fas fa-star"></i> Template 3: Fokus Review
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm template-btn"
+              data-weights='{"w1":0.2,"w2":0.2,"w3":0.2,"w4":0.2,"w5":0.2}'
+            >
+              <i class="fas fa-balance-scale"></i> Template 4: Seimbang
+            </button>
+          </div>
+        </div>
+
+        <form
+          id="weightForm"
+          method="POST"
+          action="{{ url_for('main.index') }}"
+        >
+          <div class="mb-3">
+            <label for="w1" class="form-label"
+              ><i class="fas fa-tag"></i> C1 - Harga (Cost)</label
+            >
+            <div class="input-group">
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                class="form-control"
+                id="w1"
+                name="w1"
+                value="{{ user_weights.w1 if user_weights else '' }}"
+                required
+              />
+              <span class="input-group-text">%</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="w2" class="form-label"
+              ><i class="fas fa-flask"></i> C2 - Bahan Aktif (Benefit)</label
+            >
+            <div class="input-group">
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                class="form-control"
+                id="w2"
+                name="w2"
+                value="{{ user_weights.w2 if user_weights else '' }}"
+                required
+              />
+              <span class="input-group-text">%</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="w3" class="form-label"
+              ><i class="fas fa-star"></i> C3 - Review Pengguna (Benefit)</label
+            >
+            <div class="input-group">
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                class="form-control"
+                id="w3"
+                name="w3"
+                value="{{ user_weights.w3 if user_weights else '' }}"
+                required
+              />
+              <span class="input-group-text">%</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="w4" class="form-label"
+              ><i class="fas fa-box"></i> C4 - Stok (Benefit)</label
+            >
+            <div class="input-group">
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                class="form-control"
+                id="w4"
+                name="w4"
+                value="{{ user_weights.w4 if user_weights else '' }}"
+                required
+              />
+              <span class="input-group-text">%</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="w5" class="form-label"
+              ><i class="fas fa-shield-alt"></i> C5 - Efek Samping
+              (Benefit)</label
+            >
+            <div class="input-group">
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                class="form-control"
+                id="w5"
+                name="w5"
+                value="{{ user_weights.w5 if user_weights else '' }}"
+                required
+              />
+              <span class="input-group-text">%</span>
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-calculator"></i> Hitung Peringkat
+            </button>
+            {% if preset_weights %}
+            <button type="button" id="usePreset" class="btn btn-info">
+              <i class="fas fa-database"></i> Gunakan Preset Database
+            </button>
+            {% endif %}
+            <button type="button" id="clearForm" class="btn btn-outline-danger">
+              <i class="fas fa-trash"></i> Reset
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ranking Results Column -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="mb-0"><i class="fas fa-trophy"></i> Hasil Peringkat</h3>
+      </div>
+      <div class="card-body">
+        {% if results %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Peringkat</th>
+                <th>Produk</th>
+                <th>Skor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for result in results %}
+              <tr>
+                <td>
+                  {% if loop.index == 1 %}
+                  <span class="badge bg-warning"
+                    ><i class="fas fa-crown"></i> {{ loop.index }}</span
+                  >
+                  {% else %}
+                  <span class="badge bg-secondary">{{ loop.index }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ result.nama_produk }}</td>
+                <td>
+                  <div class="progress">
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      style="width: {{ (result.score * 100)|round|int }}%"
+                    >
+                      {{ "%.4f"|format(result.score) }}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+          <p class="text-muted">
+            Masukkan bobot dan klik "Hitung Peringkat" untuk melihat hasilnya.
+          </p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Preset dari database
+    const usePresetButton = document.getElementById("usePreset");
+    if (usePresetButton) {
+      usePresetButton.addEventListener("click", function () {
+        fetch('{{ url_for("main.get_preset_weights_json") }}')
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.w1 !== undefined) {
+              setWeights(data);
+            } else {
+              alert("Preset tidak ditemukan!");
+            }
+          });
+      });
+    }
+
+    // Template buttons
+    document.querySelectorAll(".template-btn").forEach((button) => {
+      button.addEventListener("click", function () {
+        const weights = JSON.parse(this.dataset.weights);
+        setWeights(weights);
+      });
+    });
+
+    // Reset button
+    document.getElementById("clearForm").addEventListener("click", function () {
+      document.getElementById("weightForm").reset();
+    });
+
+    // Function to set weights in form
+    function setWeights(weights) {
+      document.getElementById("w1").value = weights.w1;
+      document.getElementById("w2").value = weights.w2;
+      document.getElementById("w3").value = weights.w3;
+      document.getElementById("w4").value = weights.w4;
+      document.getElementById("w5").value = weights.w5;
+    }
+
+    // Validate total weights = 1
+    document
+      .getElementById("weightForm")
+      .addEventListener("submit", function (e) {
+        const inputs = ["w1", "w2", "w3", "w4", "w5"].map(
+          (id) => parseFloat(document.getElementById(id).value) || 0
+        );
+        const total = inputs.reduce((sum, val) => sum + val, 0);
+
+        if (Math.abs(total - 1) > 0.01) {
+          e.preventDefault();
+          alert(
+            `Total bobot saat ini: ${total.toFixed(2)}. Total bobot harus = 1.0`
+          );
+        }
+      });
+  });
+</script>
+{% endblock %}

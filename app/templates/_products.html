@@ -1,0 +1,26 @@
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th scope="col">Nama Produk</th>
+        <th scope="col">C1 (Harga)</th>
+        <th scope="col">C2 (Bahan Aktif)</th>
+        <th scope="col">C3 (Review)</th>
+        <th scope="col">C4 (Stok)</th>
+        <th scope="col">C5 (Efek Samping)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for produk, penilaian in products %}
+      <tr>
+        <td>{{ produk.NAMA_PRODUK }}</td>
+        <td>Rp {{ "{:,.0f}".format(produk.HARGA).replace(',', '.') }}</td>
+        <td>{{ penilaian.BAHAN_AKTIF }}/5</td>
+        <td>{{ penilaian.REVIEW }}/5</td>
+        <td>{{ produk.STOK }}</td>
+        <td>{{ penilaian.EFEK_SAMPING }}/5</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

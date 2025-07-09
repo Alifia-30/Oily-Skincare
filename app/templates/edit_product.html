@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Produk - Skincare Selector{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Edit Produk</h2>
+                <a href="{{ url_for('main.manage_products') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.edit_product', id=product.Produk.ID_PRODUK) }}">
+                        <div class="mb-3">
+                            <label for="nama_produk" class="form-label">Nama Produk</label>
+                            <input type="text" class="form-control" id="nama_produk" name="nama_produk" 
+                                   value="{{ product.Produk.NAMA_PRODUK }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="harga" class="form-label">Harga (Rp)</label>
+                            <input type="number" class="form-control" id="harga" name="harga" 
+                                   value="{{ product.Produk.HARGA }}" min="0" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="stok" class="form-label">Stok</label>
+                            <input type="number" class="form-control" id="stok" name="stok" 
+                                   value="{{ product.Produk.STOK }}" min="0" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="active" {% if product.Produk.STATUS == 'active' %}selected{% endif %}>
+                                    Aktif
+                                </option>
+                                <option value="inactive" {% if product.Produk.STATUS == 'inactive' %}selected{% endif %}>
+                                    Nonaktif
+                                </option>
+                            </select>
+                        </div>
+
+                        <hr>
+                        <h5>Penilaian Produk</h5>
+
+                        <div class="mb-3">
+                            <label for="bahan_aktif" class="form-label">Bahan Aktif (1-5)</label>
+                            <input type="number" class="form-control" id="bahan_aktif" name="bahan_aktif" 
+                                   value="{{ product.Penilaian.BAHAN_AKTIF }}" min="1" max="5" required>
+                            <div class="form-text">1 = Sangat Buruk, 5 = Sangat Baik</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="review" class="form-label">Review Pengguna (1-5)</label>
+                            <input type="number" class="form-control" id="review" name="review" 
+                                   value="{{ product.Penilaian.REVIEW }}" min="1" max="5" required>
+                            <div class="form-text">1 = Sangat Buruk, 5 = Sangat Baik</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="efek_samping" class="form-label">Efek Samping (1-5)</label>
+                            <input type="number" class="form-control" id="efek_samping" name="efek_samping" 
+                                   value="{{ product.Penilaian.EFEK_SAMPING }}" min="1" max="5" required>
+                            <div class="form-text">1 = Banyak Efek Samping, 5 = Sangat Aman</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

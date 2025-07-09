@@ -1,0 +1,97 @@
+{% extends "base.html" %} {% block title %}Daftar Produk - Skincare Selector{%
+endblock %} {% block content %}
+<div class="container">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2>Daftar Produk Skincare</h2>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %} {% for category, message in messages %}
+  <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Nama Produk</th>
+                  <th>Harga</th>
+                  <th>Stok</th>
+                  <th>Status</th>
+                  <th>Bahan Aktif</th>
+                  <th>Review</th>
+                  <th>Efek Samping</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for product, evaluation in products %}
+                <tr>
+                  <td>{{ product.NAMA_PRODUK }}</td>
+                  <td>Rp {{ "{:,.0f}".format(product.HARGA) }}</td>
+                  <td>{{ product.STOK }}</td>
+                  <td>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input status-toggle"
+                      type="checkbox" data-product-id="{{ product.ID_PRODUK }}"
+                      {% if product.STATUS == 'active' %}checked{% endif %}>
+                      <label
+                        class="form-check-label status-label-{{ product.ID_PRODUK }}"
+                      >
+                        {{ 'Aktif' if product.STATUS == 'active' else 'Nonaktif'
+                        }}
+                      </label>
+                    </div>
+                  </td>
+                  <td>{{ evaluation.BAHAN_AKTIF if evaluation else '-' }}/5</td>
+                  <td>{{ evaluation.REVIEW if evaluation else '-' }}/5</td>
+                  <td>
+                    {{ evaluation.EFEK_SAMPING if evaluation else '-' }}/5
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Handle status toggle switches
+    document.querySelectorAll(".status-toggle").forEach((toggle) => {
+      toggle.addEventListener("change", function () {
+        const productId = this.dataset.productId;
+        const label = document.querySelector(`.status-label-${productId}`);
+
+        fetch(`/products/${productId}/toggle`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              label.textContent =
+                data.new_status === "active" ? "Aktif" : "Nonaktif";
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            this.checked = !this.checked; // Revert the toggle
+            alert("Gagal mengubah status produk");
+          });
+      });
+    });
+  });
+</script>
+{% endblock %}

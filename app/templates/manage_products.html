@@ -1,0 +1,220 @@
+{% extends "base.html" %} {% block title %}Manajemen Produk - Skincare
+Selector{% endblock %} {% block content %}
+<div class="container">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2>Manajemen Produk</h2>
+        <a href="{{ url_for('main.add_product') }}" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Tambah Produk
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %} {% for category, message in messages %}
+  <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Nama Produk</th>
+                  <th>Harga</th>
+                  <th>Stok</th>
+                  <th>Status</th>
+                  <th>Bahan Aktif</th>
+                  <th>Review</th>
+                  <th>Efek Samping</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for product, evaluation in products %}
+                <tr>
+                  <td>{{ product.NAMA_PRODUK }}</td>
+                  <td>Rp {{ "{:,.0f}".format(product.HARGA) }}</td>
+                  <td>{{ product.STOK }}</td>
+                  <td>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input status-toggle"
+                      type="checkbox" data-product-id="{{ product.ID_PRODUK }}"
+                      {% if product.STATUS == 'active' %}checked{% endif %}>
+                      <label
+                        class="form-check-label status-label-{{ product.ID_PRODUK }}"
+                      >
+                        {{ 'Aktif' if product.STATUS == 'active' else 'Nonaktif'
+                        }}
+                      </label>
+                    </div>
+                  </td>
+                  <td>{{ evaluation.BAHAN_AKTIF if evaluation else '-' }}/5</td>
+                  <td>{{ evaluation.REVIEW if evaluation else '-' }}/5</td>
+                  <td>
+                    {{ evaluation.EFEK_SAMPING if evaluation else '-' }}/5
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <a
+                        href="{{ url_for('main.edit_product', id=product.ID_PRODUK) }}"
+                        class="btn btn-sm btn-warning"
+                      >
+                        <i class="fas fa-edit"></i> Edit
+                      </a>
+                      <button
+                        class="btn btn-sm btn-danger delete-product"
+                        data-product-id="{{ product.ID_PRODUK }}"
+                        data-product-name="{{ product.NAMA_PRODUK }}"
+                      >
+                        <i class="fas fa-trash"></i> Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Konfirmasi Hapus</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        Apakah Anda yakin ingin menghapus produk "<span
+          id="productNameToDelete"
+        ></span
+        >"?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Batal
+        </button>
+        <button type="button" class="btn btn-danger" id="confirmDelete">
+          Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Handle status toggle switches
+    document.querySelectorAll(".status-toggle").forEach((toggle) => {
+      toggle.addEventListener("change", function () {
+        const productId = this.dataset.productId;
+        const label = document.querySelector(`.status-label-${productId}`);
+
+        fetch(`/products/${productId}/toggle`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              label.textContent =
+                data.new_status === "active" ? "Aktif" : "Nonaktif";
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            this.checked = !this.checked; // Revert the toggle
+            alert("Gagal mengubah status produk");
+          });
+      });
+    });
+
+    // Handle delete product
+    let productIdToDelete = null;
+    const deleteModal = new bootstrap.Modal(
+      document.getElementById("deleteConfirmModal")
+    );
+
+    document.querySelectorAll(".delete-product").forEach((button) => {
+      button.addEventListener("click", function () {
+        productIdToDelete = this.dataset.productId;
+        document.getElementById("productNameToDelete").textContent =
+          this.dataset.productName;
+        deleteModal.show();
+      });
+    });
+
+    document
+      .getElementById("confirmDelete")
+      .addEventListener("click", function () {
+        if (productIdToDelete) {
+          fetch(`/products/${productIdToDelete}/delete`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              if (data.status === "success") {
+                // Remove the row from the table
+                const row = document
+                  .querySelector(
+                    `.delete-product[data-product-id="${productIdToDelete}"]`
+                  )
+                  .closest("tr");
+                row.remove();
+                deleteModal.hide();
+                // Show success message
+                const alert = document.createElement("div");
+                alert.className = "alert alert-success";
+                alert.textContent = "Produk berhasil dihapus!";
+                document
+                  .querySelector(".container")
+                  .insertBefore(alert, document.querySelector(".row"));
+                // Auto hide alert after 3 seconds
+                setTimeout(() => alert.remove(), 3000);
+              } else {
+                throw new Error(data.message || "Failed to delete product");
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              deleteModal.hide();
+              const alert = document.createElement("div");
+              alert.className = "alert alert-danger";
+              alert.textContent = "Gagal menghapus produk: " + error.message;
+              document
+                .querySelector(".container")
+                .insertBefore(alert, document.querySelector(".row"));
+              // Auto hide alert after 3 seconds
+              setTimeout(() => alert.remove(), 3000);
+            });
+        }
+      });
+  });
+</script>
+{% endblock %}
